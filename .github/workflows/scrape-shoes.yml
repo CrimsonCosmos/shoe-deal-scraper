@@ -1,0 +1,52 @@
+name: Scrape Shoe Deals
+
+# NOTE: the automatic `schedule` trigger from the original wintern-next
+# workflow is deliberately left out here — that automation still runs there.
+# Enabling it in both repos would double the scrape traffic against these
+# retailers' sites for no benefit. Uncomment it if this repo becomes the
+# actual source of truth instead of a source snapshot.
+on:
+  # schedule:
+  #   - cron: '0 */8 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Puppeteer browser
+        run: npx puppeteer browsers install chrome
+
+      - name: Run shoe scraper
+        run: npx tsx scraper/scrape-shoes.ts
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --quiet data/shoe-deals.json || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push if changed
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/shoe-deals.json
+          git commit -m "Update shoe deals $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git pull --rebase
+          git push
