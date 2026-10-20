@@ -1,5 +1,12 @@
 # shoe-deal-scraper
 
+> **Where the live scraper runs:** the scheduled scrape that keeps the deals feed
+> fresh runs in [CrimsonCosmos/winterns](https://github.com/CrimsonCosmos/winterns)
+> (`.github/workflows/scrape-shoes.yml`, which commits updates to
+> `public/data/shoe-deals.json`; see e.g.
+> [this run's commit](https://github.com/CrimsonCosmos/winterns/commit/3dbee4663a343257d11df538c00c0d3ea81eb7b4)).
+> This repo is a snapshot with its schedule disabled, so a quiet Actions tab here is expected.
+
 Scrapes running-shoe deals across 30 retailers via Puppeteer and normalizes
 them into a single JSON feed; a React dashboard renders and filters the
 result.
